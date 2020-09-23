@@ -1,7 +1,6 @@
 provider "aws" {
   region = "eu-west-1"
-  access_key = "YOUR_ACCESS_KEY"
-  secret_key = "YOUR_SECRET_KEY"
+  shared_credentials_file = ".credentials"
 }
 
 #-------------VPC---------------
@@ -166,10 +165,8 @@ resource "aws_instance" "TerraformInstance" {
   iam_instance_profile = aws_iam_instance_profile.InstanceProfile.name
   user_data = <<EOF
             #!/bin/bash
-            sudo su
             curl 169.254.169.254/latest/meta-data/instance-id > /home/ec2-user/InstanceId.txt
             aws s3 cp /home/ec2-user/InstanceId.txt s3://${aws_s3_bucket.S3_Bucket.id}/InstanceId.txt
-            echo "ok"
             EOF
   tags = {name = "TerraformInstance"}
 }
