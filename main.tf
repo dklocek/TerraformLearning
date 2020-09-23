@@ -16,6 +16,9 @@ resource "aws_vpc" "MyVpc" {
 
 resource "aws_internet_gateway" "InternetGateway" {
   vpc_id = aws_vpc.MyVpc.id
+  tags = {
+    name = "Terraform IG"
+  }
 }
 
 resource "aws_subnet" "InternetSubnet" {
@@ -23,7 +26,7 @@ resource "aws_subnet" "InternetSubnet" {
   availability_zone = var.InternetSubnet_AZ
   vpc_id = aws_vpc.MyVpc.id
   tags = {
-    name = "InternetSubnet"
+    name = "Terraform IntSubnet"
   }
 }
 
@@ -32,6 +35,9 @@ resource "aws_route_table" "InternetTable" {
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.InternetGateway.id
+  }
+  tags = {
+    name = "Terraform IntRT"
   }
 }
 
@@ -44,7 +50,7 @@ resource "aws_route_table_association" "InternetAssociation" {
 
 resource "aws_eip" "NatElasticIP" {
   tags = {
-    name = "NatIP"
+    name = "Terraform NatIP"
   }
 }
 
@@ -52,7 +58,7 @@ resource "aws_nat_gateway" "NatGateway" {
   allocation_id = aws_eip.NatElasticIP.id
   subnet_id = aws_subnet.InternetSubnet.id
   tags = {
-    name = "NatGateway"
+    name = "Terraform NatGateway"
   }
 }
 
@@ -61,7 +67,7 @@ resource "aws_subnet" "NatSubnet" {
   availability_zone = var.NatSubnet_AZ
   vpc_id = aws_vpc.MyVpc.id
   tags = {
-    name = "NatSubnet"
+    name = "Terraform NatSubnet"
   }
 }
 
@@ -70,6 +76,9 @@ resource "aws_route_table" "NatTable" {
   route {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.NatGateway.id
+  }
+  tags = {
+    name = "Terraform NAT RT"
   }
 }
 
@@ -134,7 +143,9 @@ resource "aws_iam_instance_profile" "InstanceProfile" {
 #------------Create S3 Bucket in Private--------
 resource "aws_s3_bucket" "S3_Bucket" {
   acl = "private"
-  tags = {name = "Terraform S3 Bucket"}
+  tags = {
+    name = "Terraform S3 Bucket"
+  }
 }
 #--------------Security Group-------------------
 resource "aws_security_group" "Security_Group" {
@@ -145,30 +156,39 @@ resource "aws_security_group" "Security_Group" {
     from_port = 22
     protocol = "tcp"
     to_port = 22
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [
+      "0.0.0.0/0"]
   }
   egress {
     from_port = 0
     protocol = "-1"
     to_port = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [
+      "0.0.0.0/0"]
+  }
+  tags = {
+    name = "Terraform_SG"
   }
 }
-
+data "template_file" "userdata" {
+  template = file("userdata.tpl")
+  vars = {
+    bucket_name = aws_s3_bucket.S3_Bucket.id
+  }
+}
 #----------INSTANCE------------------
 resource "aws_instance" "TerraformInstance" {
   ami = var.ami
   instance_type = "t2.micro"
-  security_groups = [aws_security_group.Security_Group.id]
+  security_groups = [
+    aws_security_group.Security_Group.id]
   subnet_id = aws_subnet.NatSubnet.id
   key_name = "MainKeys"
   iam_instance_profile = aws_iam_instance_profile.InstanceProfile.name
-  user_data = <<EOF
-            #!/bin/bash
-            curl 169.254.169.254/latest/meta-data/instance-id > /home/ec2-user/InstanceId.txt
-            aws s3 cp /home/ec2-user/InstanceId.txt s3://${aws_s3_bucket.S3_Bucket.id}/InstanceId.txt
-            EOF
-  tags = {name = "TerraformInstance"}
+  user_data = data.template_file.userdata.rendered
+  tags = {
+    name = "TerraformInstance"
+  }
 }
 
 
