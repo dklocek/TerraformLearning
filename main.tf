@@ -165,7 +165,7 @@ resource "aws_instance" "TerraformInstance" {
   key_name = "MainKeys"
   iam_instance_profile = aws_iam_instance_profile.InstanceProfile.name
   user_data = <<EOF
-            !#/bin/bash
+            #!/bin/bash
             sudo su
             curl 169.254.169.254/latest/meta-data/instance-id > /home/ec2-user/InstanceId.txt
             aws s3 cp /home/ec2-user/InstanceId.txt s3://${aws_s3_bucket.S3_Bucket.id}/InstanceId.txt
