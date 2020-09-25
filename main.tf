@@ -1,6 +1,6 @@
 provider "aws" {
   region = "eu-west-1"
-  shared_credentials_file = "/var/creds/.credentials"
+  shared_credentials_file = "${CREDENTIALS}"
 }
 
 #-------------VPC---------------

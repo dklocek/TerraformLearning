@@ -1,9 +1,11 @@
 pipeline {
     agent any
+    environment {
+            CREDENTIALS = credentials('.credentials')
+    }
     stages {
         stage('Example') {
             steps {
-                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
                 sh "terraform init"
                 sh "terraform plan -out plan.txt"
 
