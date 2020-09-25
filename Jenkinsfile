@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment{
-        ACCOUNT_KEY = 'credentials.(creds)'
+        ACCOUNT_KEY = credentials.(creds)
     }
 
     stages {
