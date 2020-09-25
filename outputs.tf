@@ -9,7 +9,3 @@ output "S3_Bucket_name" {
 output "EC2_INSTANCE_ID" {
   value = aws_instance.TerraformInstance.id
 }
-
-output "provider" {
-  value = shared_credentials_file
-}
