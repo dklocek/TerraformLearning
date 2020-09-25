@@ -11,10 +11,9 @@ pipeline {
                 sh 'echo ----------------------------------'
                 sh 'echo $ACCOUNT_KEY '
                 sh 'echo ----------------------------------'
-                sh 'echo '$ACCOUNT_KEY' > /home/creds/.cred'
+                sh 'echo $ACCOUNT_KEY > /home/creds/.cred'
                 sh 'echo ----------------------------------'
 
-                sh 'echo '$ACCOUNT_KEY' > /home/creds/.cred'
                 sh 'base64 -d /home/creds/.cred > /home/creds/.credentials'
                 sh "terraform init"
                 sh "terraform plan -out plan.txt"
